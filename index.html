@@ -1,0 +1,419 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width"/>
+<title>IP Project</title>
+<link rel="stylesheet" type="text/css" href="css/screen.css"/>
+</head>
+
+
+<nav class="navbar">
+	<ul>
+		<li><a href="OpeningPage.html">Home</a></li>
+		<li>
+			<a href="#">Dropdown</a>
+			<ul>
+				<li><a href="features.html">Features!</a></li>
+				<li><a href="#">Download!</a></li>
+				<li><button id="myButton"></button></li>
+			</ul>
+		</li>
+		<li><a href="projectinfo.html">Project Info</a></li>
+	</ul>
+</nav>
+
+
+
+<div id="myPopup" class="popup">
+	<div class="popup-content">
+		<h1 style="color:green;">
+			  QR CUBE : QR CODE GENERATOR WEBSITE
+		  </h1>
+		<p>INDEPENDENT PROJECT 2023 </p>
+		<button id="closePopup">
+			  Close
+		  </button>
+	</div>
+</div>
+
+<body>
+<ul id="Images"></ul>
+<div class="main-text"
+<p id="DropNote">You Can Use the Available Images for Background or Just Drop your own Image</p></div>
+<canvas id="Result">Sorry, this browser cannot render this content.</canvas>
+
+<p id="Message">Loading...</p>
+<form id="Settings">
+<div class="Section">
+<input
+	id="Content"
+	type="text"
+	maxlength="64"
+	value="Enter Your Data"/>
+<div class="btn">
+<button id="Generate">Generate</button>
+</div>
+</div>
+<div class="Section1">
+<label class="Label">Increase Dot Size</label>
+<input
+	id="DotMagnifier"
+	class="Range"
+	type="range"
+	min="10"
+	max="20"
+	step="1"
+	value="13"/>
+</div>
+<div class="Section1">
+<label class="Label">Eye alpha:</label>
+<input
+	id="EyeAlpha"
+	class="Range"
+	type="range"
+	min="50"
+	max="100"
+	step="10"
+	value="50"/>
+</div>
+<div class="Section1">
+<label class="Label">Matrix alpha:</label>
+<input
+	id="MatrixAlpha"
+	class="Range"
+	type="range"
+	min="50"
+	max="100"
+	step="10"
+	value="70"/>
+</div>
+</form>
+
+<a href="/images/download.png" download="result.png">Download</a>
+
+
+<form action="OpeningPage.html">
+	<button class = "gfg" type="submit">
+		Home Page
+	</button>
+</form>
+<div class="text-main"
+<p id="License">INDEPENDENT PROJECT MADE BY 
+<a href="#">ANSHIKA TUTOO</a>,
+with
+<a href="#">Anisha</a>.
+And 
+<a href="#"></a>Shipra </p>
+</div>
+<div id="Working"></div>
+
+
+<canvas id="qr-canvas"></canvas>
+<script src="lib/qrcodegenerator/qrcode.js"></script>
+
+<script src="lib/jsqrcode/src/grid.js"></script>
+<script src="lib/jsqrcode/src/version.js"></script>
+<script src="lib/jsqrcode/src/detector.js"></script>
+<script src="lib/jsqrcode/src/formatinf.js"></script>
+<script src="lib/jsqrcode/src/errorlevel.js"></script>
+<script src="lib/jsqrcode/src/bitmat.js"></script>
+<script src="lib/jsqrcode/src/datablock.js"></script>
+<script src="lib/jsqrcode/src/bmparser.js"></script>
+<script src="lib/jsqrcode/src/datamask.js"></script>
+<script src="lib/jsqrcode/src/rsdecoder.js"></script>
+<script src="lib/jsqrcode/src/gf256poly.js"></script>
+<script src="lib/jsqrcode/src/gf256.js"></script>
+<script src="lib/jsqrcode/src/decoder.js"></script>
+<script src="lib/jsqrcode/src/qrcode.js"></script>
+<script src="lib/jsqrcode/src/findpat.js"></script>
+<script src="lib/jsqrcode/src/alignpat.js"></script>
+<script src="lib/jsqrcode/src/databr.js"></script>
+<!-- QR image merger -->
+<script src="lib/qrim.js"></script>
+<script>
+
+"use strict";
+
+Math.TAU = Math.TAU || Math.PI*2;
+
+var qrim = new QRIM(),
+	sampleImages = [
+		"images/beach.jpg",
+		"images/coffee.jpg",
+		"images/kay.jpg",
+		"images/motorcycle.jpg",
+		"images/park.jpg",
+		"images/pebbles.jpg",
+		"images/rallye.jpg",
+		"images/ski.jpg",
+		"images/strawberries.jpg",
+		"images/sundown.jpg",
+		"images/tapas.jpg",
+		"images/umbrella.jpg"],
+	images,
+	contentInput,
+	generateButton,
+	dotMagnifierRange,
+	eyeAlphaRange,
+	matrixAlphaRange,
+	imageList,
+	resultCanvas,
+	resultCtx,
+	messageText,
+	working,
+	qrCanvas,
+	qrCtx,
+	focusedImage;
+
+function setResultCanvas( image )
+{
+	var w = image.canvas.width,
+		h = image.canvas.height;
+
+	resultCanvas.width = w;
+	resultCanvas.height = h;
+	resultCanvas.style.width = w+"px";
+	resultCanvas.style.height = h+"px";
+	resultCtx.drawImage( image.canvas, 0, 0 );
+
+	messageText.innerHTML = image.message;
+
+	focusedImage = image;
+}
+
+function setStatus( image, text, color )
+{
+	image.img.style.borderColor = color ? color : '#333';
+	image.message = color ? '<span class="Error">'+text+'</span>' : text;
+}
+
+function checkCode( canvas, text, image )
+{
+	var errorColor = "#a00";
+
+
+	qrCanvas.width = canvas.width;
+	qrCanvas.height = canvas.height;
+	qrCtx.drawImage( canvas, 0, 0 );
+
+	qrcode.callback =
+		function( data )
+		{
+			
+			if( text.localeCompare( data ) )
+				setStatus(
+					image,
+					'Expected "'+text+'" but got "'+data+'"',
+					errorColor );
+			else
+				setStatus(
+					image,
+					'QR code successfully Generated.' );
+		};
+
+	try
+	{
+		qrcode.decode();
+	}
+	catch( e )
+	{
+		setStatus( image, e, errorColor );
+	}
+}
+
+function drawWhenComplete()
+{
+	for( var n = images.length; n--; )
+		if( !images[n].img.complete )
+			return setTimeout( drawWhenComplete, 500 );
+
+	qrim.dotMagnifier = dotMagnifierRange.value/10;
+	qrim.eyeAlpha = eyeAlphaRange.value/100;
+	qrim.matrixAlpha = matrixAlphaRange.value/100;
+
+	var text = contentInput.value,
+		qr = qrcodegenerator( text.length < 8 ? 2 : 0, 'H' );
+
+	qr.addData( text );
+	qr.make();
+
+	for( var n = images.length; n--; )
+	{
+		var image = images[n],
+			img = image.img,
+			canvas = image.canvas;
+
+		qrim.draw( canvas, img, qr );
+		checkCode( canvas, text, image );
+
+		if( !focusedImage ||
+			focusedImage == image )
+			setResultCanvas( image );
+	}
+
+	working.style.display = "none";
+}
+
+function reset()
+{
+	for( var n = images.length; n--; )
+		images[n].img.borderColor = "#222";
+
+	resultCtx.clearRect(
+		0,
+		0,
+		resultCanvas.width,
+		resultCanvas.height );
+
+	messageText.innerHTML = "Generating...";
+	working.style.display = "block";
+}
+
+function postDraw()
+{
+	reset();
+	setTimeout( drawWhenComplete, 100 );
+}
+
+function addImage( url )
+{
+	var image =
+	{
+		img: document.createElement( "img" ),
+		canvas: document.createElement( "canvas" )
+	};
+
+	image.img.src = url;
+	image.img.onclick =
+		function()
+		{
+			setResultCanvas( image );
+		};
+
+	images.push( image );
+
+	return image;
+}
+
+function addImageFromFile( file )
+{
+	var reader = new FileReader();
+
+	reader.onload = function( event )
+	{
+		var li = document.createElement( "li" ),
+			image = addImage( event.target.result );
+
+		li.appendChild( image.img );
+		imageList.appendChild( li );
+
+		setResultCanvas( image );
+		postDraw();
+	};
+
+	reader.readAsDataURL( file );
+}
+
+function initDrop()
+{
+	document.ondragover =
+	document.ondragenter =
+		function( event )
+		{
+			event.stopPropagation();
+			event.preventDefault();
+		};
+
+	document.ondrop =
+		function( event )
+		{
+			event.stopPropagation();
+			event.preventDefault();
+
+			addImageFromFile(
+				event.dataTransfer.files[0] );
+		}
+}
+
+function initImageList()
+{
+	images = [];
+
+	for( var n = sampleImages.length; n--; )
+	{
+		var li = document.createElement( "li" );
+
+		li.appendChild( addImage( sampleImages[n] ).img );
+		imageList.appendChild( li );
+	}
+}
+
+function initContentInput()
+{
+	contentInput.onkeypress =
+		function( event )
+		{
+			if( event.keyCode == 13 )
+			{
+				event.stopPropagation();
+				event.preventDefault();
+				postDraw();
+				return false;
+			}
+
+			return true;
+		};
+
+	generateButton.onclick =
+		function( event )
+		{
+			event.stopPropagation();
+			event.preventDefault();
+			postDraw();
+			return false;
+		};
+}
+
+function init()
+{
+	if( !(contentInput = document.getElementById( "Content" )) ||
+		!(generateButton = document.getElementById( "Generate" )) ||
+		!(dotMagnifierRange = document.getElementById( "DotMagnifier" )) ||
+		!(eyeAlphaRange = document.getElementById( "EyeAlpha" )) ||
+		!(matrixAlphaRange = document.getElementById( "MatrixAlpha" )) ||
+		!(imageList = document.getElementById( "Images" )) ||
+		!(resultCanvas = document.getElementById( "Result" )) ||
+		!(resultCtx = resultCanvas.getContext( "2d" )) ||
+		!(messageText = document.getElementById( "Message" )) ||
+		!(working = document.getElementById( "Working" )) ||
+		!(qrCanvas = document.getElementById( "qr-canvas" )) ||
+		!(qrCtx = qrCanvas.getContext( "2d" )) )
+		return;
+
+	initContentInput();
+	initImageList();
+	initDrop();
+
+	postDraw();
+}
+
+window.onload = init;
+
+
+	myButton.addEventListener("click", function () {
+		myPopup.classList.add("show");
+	});
+	closePopup.addEventListener("click", function () {
+		myPopup.classList.remove("show");
+	});
+	window.addEventListener("click", function (event) {
+		if (event.target == myPopup) {
+			myPopup.classList.remove("show");
+		}
+	});
+
+
+</script>
+</body>
+</html>
